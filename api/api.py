@@ -1,5 +1,5 @@
-from flask import Flask
-from flask_restful import Resource, Api
+from flask import Flask, jsonify, request
+from flask_restful import Resource, Api, reqparse
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
 from chatterbot.trainers import ChatterBotCorpusTrainer
@@ -25,7 +25,11 @@ class ChatBotTrain(Resource):
             "Thank you.",
             "You're welcome.",
             "What is WL ODC",
-            "WL ODC is a great place to work"
+            "WL ODC is a great place to work",
+            "What is SPARK",
+            "SPARK is WL ODC platform to develop innovative ideas",
+            "What is WIN",
+            "WIN Stands for Worldline Innovative Network."
         ]
         chatBot.set_trainer(ChatterBotCorpusTrainer)
         chatBot.set_trainer(ListTrainer)
@@ -33,16 +37,32 @@ class ChatBotTrain(Resource):
             "chatterbot.corpus.english"
         )
         chatBot.train(conversation)
-        return {'response': 'Agent training completed successfully'}
+        return {'result': 'Agent training completed successfully'}
+
+
+class ChatBotQuestions(Resource):
+    def get(self):
+        #         Get the existing set of questions from Firebase
+        return jsonify(result="")
+
+    def post(self):
+        jsonData = request.get_json(force=True)
+        senderId = jsonData['senderId']
+        question = jsonData['question']
+        answer = jsonData['answer']
+        tenantId = jsonData['tenantId']
+        return jsonify(result="")
 
 
 class ChatBot(Resource):
 
-    def get(self):
-        response = str(chatBot.get_response("What is WL ODC"))
+    def post(self):
+        jsonData = request.get_json(force=True)
+        senderId = jsonData['senderId']
+        query = jsonData['query']
 
-        print("Response from Bot is ", str(response))
-        return {'response': response}
+        response = str(chatBot.get_response(query))
+        return jsonify(result=response)
 
 
 api.add_resource(HelloWorld, '/')
