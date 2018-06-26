@@ -5,12 +5,12 @@ from chatterbot.trainers import ListTrainer
 from chatterbot.trainers import ChatterBotCorpusTrainer
 import pyrebase
 
-config = {
-  "apiKey": "apiKey",
-  "authDomain": "projectId.firebaseapp.com",
-  "databaseURL": "https://databaseName.firebaseio.com",
-  "storageBucket": "projectId.appspot.com"
-}
+config = {}
+config['apiKey'] = "AIzaSyBmc7ZDPODEoYMjskk-TZMm1fGUuARtpnY"
+config['authDomain'] = "wl-odc-chatbot.firebaseapp.com"
+config['databaseURL'] = "https://wl-odc-chatbot.firebaseio.com"
+config['projectId'] = "wl-odc-chatbot"
+config['storageBucket'] = "wl-odc-chatbot.appspot.com"
 
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
@@ -18,6 +18,12 @@ app = Flask(__name__)
 api = Api(app)
 chatBot = ChatBot("WL ODC")
 
+class QnA(object):
+    """__init__() functions as the class constructor"""
+    def __init__(self, question=None, answer=None, createdBy=None):
+        self.question = question
+        self.answer = answer
+        self.createdBy = createdBy
 
 class ChatBotTrain(Resource):
     def post(self):
@@ -48,8 +54,11 @@ class ChatBotTrain(Resource):
 class ChatBotQuestions(Resource):
     def get(self):
         #         Get the existing set of questions from Firebase
-        all_users = db.child("training-data").get()
-        return jsonify(result=all_users)
+        allQnAs = []
+        all_data = db.child("training-data").get()
+        for qna in all_data.each():
+            allQnAs.append(qna.val())
+        return jsonify(result=allQnAs)
 
     def post(self):
         jsonData = request.get_json(force=True)
