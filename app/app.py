@@ -3,7 +3,17 @@ from flask_restful import Resource, Api, reqparse
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
 from chatterbot.trainers import ChatterBotCorpusTrainer
+import pyrebase
 
+config = {
+  "apiKey": "apiKey",
+  "authDomain": "projectId.firebaseapp.com",
+  "databaseURL": "https://databaseName.firebaseio.com",
+  "storageBucket": "projectId.appspot.com"
+}
+
+firebase = pyrebase.initialize_app(config)
+db = firebase.database()
 app = Flask(__name__)
 api = Api(app)
 chatBot = ChatBot("WL ODC")
@@ -38,7 +48,8 @@ class ChatBotTrain(Resource):
 class ChatBotQuestions(Resource):
     def get(self):
         #         Get the existing set of questions from Firebase
-        return jsonify(result="")
+        all_users = db.child("training-data").get()
+        return jsonify(result=all_users)
 
     def post(self):
         jsonData = request.get_json(force=True)
@@ -46,7 +57,14 @@ class ChatBotQuestions(Resource):
         question = jsonData['question']
         answer = jsonData['answer']
         tenantId = jsonData['tenantId']
-        return jsonify(result="")
+
+        data = {
+            "question": question,
+            "answer": answer,
+            "createdBy": senderId
+        }
+        db.child("training-data").push(data)
+        return {'result': 'QnA saved successfully'}
 
 
 class ChatBot(Resource):
@@ -61,8 +79,9 @@ class ChatBot(Resource):
 
 
 api.add_resource(ChatBotTrain, '/api/chat/train')
-api.add_resource(ChatBot,
-                 '/api/chat')
+api.add_resource(ChatBot, '/api/chat')
+api.add_resource(ChatBotQuestions, '/api/chat/qna');
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
