@@ -9,11 +9,6 @@ api = Api(app)
 chatBot = ChatBot("WL ODC")
 
 
-class HelloWorld(Resource):
-    def get(self):
-        return {'hello': 'world'}
-
-
 class ChatBotTrain(Resource):
     def post(self):
         conversation = [
@@ -65,10 +60,9 @@ class ChatBot(Resource):
         return jsonify(result=response)
 
 
-api.add_resource(HelloWorld, '/')
-api.add_resource(ChatBotTrain, '/chat/train')
+api.add_resource(ChatBotTrain, '/api/chat/train')
 api.add_resource(ChatBot,
-                 '/chat')
+                 '/api/chat')
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host='0.0.0.0', port=5000)
